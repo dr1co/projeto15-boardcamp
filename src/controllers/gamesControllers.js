@@ -1,7 +1,9 @@
 import connection from "../databases/postgres.js";
 
 export async function getGames(req, res) {
-    if (req.query.name) {
+    const name = req.query.name;
+
+    if (name) {
         try {
             const query = await connection.query(
                 `SELECT games.*, categories.name AS "categoryName"
@@ -9,7 +11,7 @@ export async function getGames(req, res) {
                 JOIN categories
                 ON games."categoryId" = categories.id
                 WHERE LOWER (games.name) LIKE LOWER ($1)`,
-                [`${req.query.name}%`]
+                [`${name}%`]
             );
             res.status(200).send(query.rows);
        } catch (err) {
@@ -36,6 +38,7 @@ export async function addGame(req, res) {
     try {
         const query = connection.query(`
             INSERT INTO games ("name", "image", "stockTotal", "pricePerDay", "categoryId")
+            VALUES ($1, $2, $3, $4, $5)
         `,
             [
                 game.name,
